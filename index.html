@@ -23,8 +23,8 @@ input,select{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px
 .m{border-top:1px solid var(--bd);padding:10px 0}
 .m:first-of-type{border-top:0}
 .m b{display:inline-block;margin-bottom:6px}
-.g{display:grid;grid-template-columns:2fr 1fr 2fr;gap:8px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.g{display:grid;grid-template-columns:3fr 2fr;gap:8px}
+.g2{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
 .sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .sum span{flex:1;min-width:70px;text-align:center;border-radius:10px;padding:8px 4px;font-size:12px;color:#fff}
 .sum strong{display:block;font-size:20px}
@@ -57,7 +57,7 @@ const MAQ=["FLR2","FLR4","FLR5","FLR6","FLR9","FLR10","FLR13","FLR14","FLR17"];
 const EST={"Operando":"#2da44e","Parada":"#d1242f","Mantenimiento":"#e8a317","Cambio de troquel":"#8250df","Ajuste":"#0e8fa8","Sin operario":"#c2410c","Pruebas":"#d9468f","Sin programa":"#6e7781"};
 const $=id=>document.getElementById(id);
 let D={fecha:new Date().toISOString().slice(0,10),turno:"1",r:{}};
-MAQ.forEach(m=>D.r[m]={f:"",t:"",c:"",rf:"",p:"",e:"Operando"});
+MAQ.forEach(m=>D.r[m]={f:"",t:"",rf:"",e:"Operando"});
 try{const s=localStorage.getItem("trq");if(s){const o=JSON.parse(s);if(o&&o.r)D=Object.assign(D,o)}}catch(e){}
 function save(){try{localStorage.setItem("trq",JSON.stringify(D))}catch(e){}}
 $("fecha").value=D.fecha;$("turno").value=D.turno;
@@ -66,7 +66,7 @@ $("turno").onchange=e=>{D.turno=e.target.value;save()};
 const rows=$("rows");
 MAQ.forEach(m=>{
   const d=document.createElement("div");d.className="m";
-  d.innerHTML=`<b>${m}</b><div class="g"><div><label>TROQUEL (Ø / ▭)</label><div style="display:flex;gap:4px"><select data-k="f" data-m="${m}" style="width:58px;padding:9px 2px;font-size:18px"><option value="">–</option><option>Ø</option><option>▭</option></select><input data-k="t" data-m="${m}" value="" style="min-width:0"></div></div><div><label># CAVIDADES</label><input data-k="c" data-m="${m}" inputmode="numeric" value=""></div><div><label>ESTADO</label><select data-k="e" data-m="${m}">${Object.keys(EST).map(x=>`<option>${x}</option>`).join("")}</select></div></div><div class="g2"><div><label>REFERENCIA</label><input data-k="rf" data-m="${m}" value="" style="min-width:0"></div><div><label>PRODUCTO</label><input data-k="p" data-m="${m}" value="" style="min-width:0"></div></div>`;
+  d.innerHTML=`<b>${m}</b><div class="g"><div><label>TROQUEL (Ø / ▭)</label><div style="display:flex;gap:4px"><select data-k="f" data-m="${m}" style="width:58px;padding:9px 2px;font-size:18px"><option value="">–</option><option>Ø</option><option>▭</option></select><input data-k="t" data-m="${m}" value="" style="min-width:0"></div></div><div><label>ESTADO</label><select data-k="e" data-m="${m}">${Object.keys(EST).map(x=>`<option>${x}</option>`).join("")}</select></div></div><div class="g2"><div><label>REFERENCIA</label><input data-k="rf" data-m="${m}" value="" style="min-width:0"></div></div>`;
   rows.appendChild(d);
   d.querySelectorAll("[data-k]").forEach(el=>{el.value=D.r[m][el.dataset.k]||"";
     el.addEventListener("input",()=>{D.r[m][el.dataset.k]=el.value;save();sum()})});
@@ -78,34 +78,32 @@ function sum(){
 sum();
 function fmt(f){if(!f)return"—";const [y,m,d]=f.split("-");return `${d}/${m}/${y}`}
 function draw(){
-  const W=1400,RH=96,H=300+RH*MAQ.length+60,cv=document.createElement("canvas");
+  const W=1080,RH=96,H=300+RH*MAQ.length+60,cv=document.createElement("canvas");
   cv.width=W;cv.height=H;const x=cv.getContext("2d");
   x.fillStyle="#fff";x.fillRect(0,0,W,H);
   x.fillStyle="#1f2937";x.fillRect(0,0,W,150);
   x.fillStyle="#fff";x.font="bold 50px sans-serif";x.textBaseline="middle";
   x.fillText("ESTADO DE MÁQUINAS Y TROQUELES",40,55);
   x.font="36px sans-serif";x.fillText("FECHA: "+fmt(D.fecha)+"     TURNO: "+D.turno,40,110);
-  const cols=[40,190,420,540,780,1060,1360];
+  const cols=[40,190,500,760,1040];
   const y0=170;
-  x.fillStyle="#e5e7eb";x.fillRect(40,y0,1320,70);
+  x.fillStyle="#e5e7eb";x.fillRect(40,y0,1000,70);
   x.fillStyle="#111";x.font="bold 30px sans-serif";
-  ["MÁQUINA","TROQUEL","# CAV.","REFERENCIA","PRODUCTO","ESTADO"].forEach((h,i)=>x.fillText(h,cols[i]+14,y0+35));
+  ["MÁQUINA","TROQUEL","REFERENCIA","ESTADO"].forEach((h,i)=>x.fillText(h,cols[i]+14,y0+35));
   MAQ.forEach((m,i)=>{
     const y=y0+70+i*RH,r=D.r[m];
-    x.fillStyle=i%2?"#f9fafb":"#fff";x.fillRect(40,y,1320,RH);
+    x.fillStyle=i%2?"#f9fafb":"#fff";x.fillRect(40,y,1000,RH);
     x.fillStyle="#111";x.font="bold 36px sans-serif";x.fillText(m,cols[0]+14,y+RH/2);
-    x.font="30px sans-serif";x.fillText(((r.f?r.f+" ":"")+(r.t||"—")).slice(0,12),cols[1]+14,y+RH/2);
-    x.fillText(r.c||"—",cols[2]+14,y+RH/2);
-    x.fillText((r.rf||"—").slice(0,11),cols[3]+14,y+RH/2);
-    x.fillText((r.p||"—").slice(0,13),cols[4]+14,y+RH/2);
-    x.fillStyle=EST[r.e];x.beginPath();x.roundRect(cols[5]+10,y+18,280,RH-36,14);x.fill();
+    x.font="30px sans-serif";x.fillText(((r.f?r.f+" ":"")+(r.t||"—")).slice(0,16),cols[1]+14,y+RH/2);
+    x.fillText((r.rf||"—").slice(0,13),cols[2]+14,y+RH/2);
+    x.fillStyle=EST[r.e];x.beginPath();x.roundRect(cols[3]+10,y+18,260,RH-36,14);x.fill();
     x.fillStyle="#fff";x.font="bold 25px sans-serif";x.textAlign="center";
-    x.fillText(r.e,cols[5]+150,y+RH/2);x.textAlign="left";
+    x.fillText(r.e,cols[3]+140,y+RH/2);x.textAlign="left";
   });
   const yb=y0+70+MAQ.length*RH;
-  x.strokeStyle="#9ca3af";x.lineWidth=2;x.strokeRect(40,y0,1320,yb-y0);
-  for(let i=0;i<=MAQ.length;i++){x.beginPath();x.moveTo(40,y0+70+i*RH);x.lineTo(1360,y0+70+i*RH);x.stroke()}
-  [190,420,540,780,1060].forEach(cx=>{x.beginPath();x.moveTo(cx,y0);x.lineTo(cx,yb);x.stroke()});
+  x.strokeStyle="#9ca3af";x.lineWidth=2;x.strokeRect(40,y0,1000,yb-y0);
+  for(let i=0;i<=MAQ.length;i++){x.beginPath();x.moveTo(40,y0+70+i*RH);x.lineTo(1040,y0+70+i*RH);x.stroke()}
+  [190,500,760].forEach(cx=>{x.beginPath();x.moveTo(cx,y0);x.lineTo(cx,yb);x.stroke()});
   return cv;
 }
 let blob=null;
@@ -128,7 +126,7 @@ $("wa").onclick=async()=>{
   $("msg").textContent="Mantén presionada la imagen y elige Guardar o Compartir.";
 };
 $("clr").onclick=()=>{
-  MAQ.forEach(m=>D.r[m]={f:"",t:"",c:"",rf:"",p:"",e:"Operando"});
+  MAQ.forEach(m=>D.r[m]={f:"",t:"",rf:"",e:"Operando"});
   rows.querySelectorAll("[data-k]").forEach(el=>{el.value=D.r[el.dataset.m][el.dataset.k]});
   save();sum();$("out").hidden=true;$("wa").hidden=true;
 };
